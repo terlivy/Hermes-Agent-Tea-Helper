@@ -33,7 +33,7 @@
 | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | AI 智能体，内容生成核心 | ✅ 已配置 |
 | [MiniMax CLI](https://github.com/MiniMax-AI/cli) | 额度高，速度快 | ✅ 已登录 |
 | [Happy Horse](https://www.happyhorse.video) | AI 视频生成 | ✅ 已测试 |
-| [social-auto-upload](https://github.com/dreammis/social-auto-upload) | 多平台自动发布 | ⬜ 待安装 |
+| [social-auto-upload](https://github.com/dreammis/social-auto-upload) | 多平台自动发布 | ✅ 抖音+小红书已验证 |
 
 ## 快速开始
 
@@ -45,13 +45,17 @@ cd ~
 git clone https://github.com/dreammis/social-auto-upload.git
 cd social-auto-upload
 
-# 创建虚拟环境
-python3 -m venv ~/.venv-sau
+# 创建虚拟环境（必须 Python 3.14）
+python3.14 -m venv ~/.venv-sau
 source ~/.venv-sau/bin/activate
 
 # 安装依赖
 pip install -r requirements.txt
 playwright install chromium
+
+# 配置代理（国内必需，ClashX Pro 端口 7890）
+export https_proxy=http://127.0.0.1:7890
+export http_proxy=http://127.0.0.1:7890
 ```
 
 ### 2. 登录平台账号
@@ -59,31 +63,57 @@ playwright install chromium
 ```bash
 source ~/.venv-sau/bin/activate
 
-# 登录小红书
-sau xiaohongshu login --account tea_shop
+# 登录小红书（--headed 弹出浏览器窗口扫码）
+cd ~/social-auto-upload
+python sau_cli.py xiaohongshu login --account tea_shop --headed
 
 # 登录抖音
-sau douyin login --account tea_shop
+python sau_cli.py douyin login --account tea_shop --headed
+
+# 验证登录状态
+python sau_cli.py douyin check --account tea_shop
+python sau_cli.py xiaohongshu check --account tea_shop
 ```
 
-### 3. 配置 Hermes Skills
+### 3. 同步账号到 Web UI（如需 Web 界面发布）
 
-参考 `skills/` 目录下的配置文件，逐一导入到 Hermes Agent。
+CLI 登录后需要同步 cookie 到 Web UI 数据库，详见 `skills/social-auto-upload.md`
 
-### 4. 配置定时任务
+### 4. 导入 Hermes Skills
+
+把 `skills/` 目录下的文件导入到 Hermes Agent：
+
+```
+tea-topic    → 选题策划
+tea-prompt   → HappyHorse 视频提示词
+tea-copy     → 多平台文案生成
+tea-reply    → 评论自动回复
+tea-daily    → 每日定时调度
+social-auto-upload → 多平台自动发布
+```
+
+### 5. 发布视频（CLI）
 
 ```bash
-# 每天早上9点生成内容
-hermes cron add \
-  --name "tea-daily-content" \
-  --schedule "0 9 * * *" \
-  --prompt "调用 tea-topic + tea-prompt + tea-copy，生成当日内容，保存到 ~/tea-content/"
+source ~/.venv-sau/bin/activate
+cd ~/social-auto-upload
 
-# 每周三、六 18:00 发布
-hermes cron add \
-  --name "tea-publish" \
-  --schedule "0 18 * * 3,6" \
-  --prompt "读取 ~/tea-content 最新视频，调用 social-auto-upload 发布到抖音和小红书"
+# 发布到抖音
+python sau_cli.py douyin upload-video \
+  --account tea_shop \
+  --file ~/Videos/demo.mp4 \
+  --title "标题" \
+  --desc "简介" \
+  --tags "茶叶,茶文化" \
+  --headed    # 手动确认发布（推荐）
+
+# 发布到小红书
+python sau_cli.py xiaohongshu upload-video \
+  --account tea_shop \
+  --file ~/Videos/demo.mp4 \
+  --title "标题" \
+  --desc "简介" \
+  --headed
 ```
 
 ## 工作流程
@@ -121,16 +151,17 @@ Hermes-Agent-Tea-Helper/
 ├── README.md              # 本文件
 ├── skills/                # Hermes Skills 配置
 │   ├── tea-topic.md       # 选题策划
-│   ├── tea-prompt.md      # HappyHorse 提示词
+│   ├── tea-prompt.md      # HappyHorse 视频提示词
 │   ├── tea-copy.md        # 多平台文案
 │   ├── tea-reply.md       # 评论回复
-│   └── tea-daily.md       # 定时调度
+│   ├── tea-daily.md       # 定时调度
+│   └── social-auto-upload.md  # 多平台自动发布
 ├── docs/                  # 详细文档
 │   ├── install.md         # 安装指南
 │   ├── workflow.md        # 工作流说明
-│   └── platforms.md      # 平台配置
-└── examples/             # 示例内容
-    └── sample-videos/    # 视频提示词示例
+│   └── platforms.md       # 平台配置
+└── examples/              # 示例内容
+    └── sample-videos/     # 视频提示词示例
 ```
 
 ## 安全说明
