@@ -33,7 +33,7 @@
 | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | AI 智能体，内容生成核心 | ✅ 已配置 |
 | [MiniMax CLI](https://github.com/MiniMax-AI/cli) | 额度高，速度快 | ✅ 已登录 |
 | [Happy Horse](https://www.happyhorse.video) | AI 视频生成 | ✅ 已测试 |
-| [social-auto-upload](https://github.com/dreammis/social-auto-upload) | 多平台自动发布 | ✅ 抖音+小红书已验证 |
+| [ai-ops-helper](https://github.com/terlivy/ai-ops-helper) | 多平台自动发布（抖音/小红书） | ✅ 抖音+小红书已验证 |
 
 ## 快速开始
 
